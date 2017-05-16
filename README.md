@@ -220,6 +220,35 @@ var dogger = new Dogger("忠犬八公", '柴犬');
 ```
 1. 代码报错了！！！这是因为，在构造函数中执行this.breed = breed的时候，就会去调用set breed，在set breed方法中，我们又执行this.breed = breed，进行无限递归，最后导致**栈溢出(RangeError)**。
 2. 因此，原来只要this.breed中的属性名和set breed/get breed后面的breed一致，对this.breed就会调用setter/getter，也就是说setter/getter是hook函数，而真实的存储变量是_breed_，我们可以在代码中直接获取它。
+
+## ES6 的 proxy
+
+Proxy可以理解成代理代办，在目标对象之前架设一层“拦截”，劫持了外界对该对象的访问和设置(setter和getter)。
+
+借用最近看到的例子直接看代码吧
+```
+const phoneHandler = {
+      get (target,name) {
+        console.log(`正在读取${name}`)
+        //'0102101220'.replace(/(\d{3})(\d{3})(\d{4})/,'$1-$2-$3')
+        //"010-210-1220"
+        return target[name].replace(/([0-9]{3})(\d{3})(\d{4})/,'($1)-$2-$3')
+      },
+
+      set (target, name, value) {
+        console.log(`正在设置${name}`)
+        // .match正则表达式的方法:匹配所有数字，全局匹配
+        target[name] = value.match(/[0-9]/g).join('')
+      }
+    }
+
+    // 拦截对象,代理代办,对空对象的代理
+    // 复杂对象 ajax 将代码放在proxy中
+    const phoneNumber = new Proxy({}, phoneHandler)
+    phoneNumber.phone = '电话：0102101220'
+    console.log(phoneNumber.phone)
+```
+不难看出new出来的Proxy是对空对象的代理，这样一来，setter和getter都被phoneHandler中的set和get包办了，用于复杂对象， ajax， 将代码放在proxy中代理。
 # 参考
 > 1. 你不知道的javascript
 > 2. javascript高级程序设计
